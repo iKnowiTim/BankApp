@@ -8,10 +8,11 @@ class BankServer
         listener = new HttpListener();
     }
 
-    public HttpListener listener;
-    public const int port = 3000;
+    private HttpListener listener;
+    private const int port = 3000;
     private const string loginPage = "PageTemplates/login.html";
-    public string url = $"http://localhost:{port}/";
+    private const string cabinetPage = "PageTemplates/personalCabinet.html";
+    private string url = $"http://localhost:{port}/login/";
 
     public async Task HandleIncomingConnections()
     {
@@ -24,19 +25,28 @@ class BankServer
             HttpListenerRequest req = listenCont.Request;
             HttpListenerResponse res = listenCont.Response;
 
-            if ((req.HttpMethod == "GET") && (req.Url?.AbsolutePath == "/login"))
+            if ((req.HttpMethod == "POST") && (req.Url?.AbsolutePath == "/login"))
             {
-                Console.WriteLine("Hello");
+                byte[] data = File.ReadAllBytes(cabinetPage);
+                res.ContentType = "text/html";
+                res.ContentEncoding = Encoding.UTF8;
+                res.ContentLength64 = data.LongLength;
+
+                await res.OutputStream.WriteAsync(data, 0, data.Length);
+
+                res.Close();
             }
+            else
+            {
+                byte[] data = File.ReadAllBytes(loginPage);
+                res.ContentType = "text/html";
+                res.ContentEncoding = Encoding.UTF8;
+                res.ContentLength64 = data.LongLength;
 
-            byte[] data = File.ReadAllBytes(loginPage);
-            res.ContentType = "text/html";
-            res.ContentEncoding = Encoding.UTF8;
-            res.ContentLength64 = data.LongLength;
+                await res.OutputStream.WriteAsync(data, 0, data.Length);
 
-            await res.OutputStream.WriteAsync(data, 0, data.Length);
-
-            res.Close();
+                res.Close();
+            }
         }
     }
 
