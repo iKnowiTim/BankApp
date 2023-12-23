@@ -1,4 +1,5 @@
 using System.Net;
+using System.Text;
 
 class BankServer
 {
@@ -9,6 +10,7 @@ class BankServer
 
     public HttpListener listener;
     public const int port = 3000;
+    private const string loginPage = "PageTemplates/login.html";
     public string url = $"http://localhost:{port}/";
 
     public async Task HandleIncomingConnections()
@@ -22,6 +24,17 @@ class BankServer
             HttpListenerRequest req = listenCont.Request;
             HttpListenerResponse res = listenCont.Response;
 
+            if ((req.HttpMethod == "GET") && (req.Url?.AbsolutePath == "/login"))
+            {
+                Console.WriteLine("Hello");
+            }
+
+            byte[] data = File.ReadAllBytes(loginPage);
+            res.ContentType = "text/html";
+            res.ContentEncoding = Encoding.UTF8;
+            res.ContentLength64 = data.LongLength;
+
+            await res.OutputStream.WriteAsync(data, 0, data.Length);
 
             res.Close();
         }
