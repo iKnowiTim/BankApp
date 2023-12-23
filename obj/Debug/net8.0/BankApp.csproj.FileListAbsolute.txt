@@ -1,0 +1,15 @@
+/home/tim/Projects/BankApp/bin/Debug/net8.0/BankApp
+/home/tim/Projects/BankApp/bin/Debug/net8.0/BankApp.deps.json
+/home/tim/Projects/BankApp/bin/Debug/net8.0/BankApp.runtimeconfig.json
+/home/tim/Projects/BankApp/bin/Debug/net8.0/BankApp.dll
+/home/tim/Projects/BankApp/bin/Debug/net8.0/BankApp.pdb
+/home/tim/Projects/BankApp/obj/Debug/net8.0/BankApp.GeneratedMSBuildEditorConfig.editorconfig
+/home/tim/Projects/BankApp/obj/Debug/net8.0/BankApp.AssemblyInfoInputs.cache
+/home/tim/Projects/BankApp/obj/Debug/net8.0/BankApp.AssemblyInfo.cs
+/home/tim/Projects/BankApp/obj/Debug/net8.0/BankApp.csproj.CoreCompileInputs.cache
+/home/tim/Projects/BankApp/obj/Debug/net8.0/BankApp.sourcelink.json
+/home/tim/Projects/BankApp/obj/Debug/net8.0/BankApp.dll
+/home/tim/Projects/BankApp/obj/Debug/net8.0/refint/BankApp.dll
+/home/tim/Projects/BankApp/obj/Debug/net8.0/BankApp.pdb
+/home/tim/Projects/BankApp/obj/Debug/net8.0/BankApp.genruntimeconfig.cache
+/home/tim/Projects/BankApp/obj/Debug/net8.0/ref/BankApp.dll
