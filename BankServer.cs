@@ -18,7 +18,7 @@ class BankServer
     private const int port = 3000;
     private const string loginPage = "PageTemplates/login.html";
     private const string cabinetPage = "PageTemplates/personalCabinet.html";
-    private string url = $"http://localhost:{port}/login/";
+    private string baseUrl = $"http://localhost:{port}/";
     private Dictionary<string, string> user;
     public async Task HandleIncomingConnections()
     {
@@ -75,11 +75,12 @@ class BankServer
         {
             Console.WriteLine($"{item}:{request.Headers[item]}");
         }
+        Console.WriteLine("Выполнено");
     }
 
     public void StartServer()
     {
-        listener.Prefixes.Add(url);
+        listener.Prefixes.Add(baseUrl);
         listener.Start();
         Console.WriteLine($"Listening for connection on port = {port}");
 
