@@ -6,6 +6,12 @@ class BankServer
     public BankServer()
     {
         listener = new HttpListener();
+        user = new Dictionary<string, string>()
+        {
+            {"user1", "password1"},
+            {"user2", "password2"},
+            {"tim", "tim"}
+        };
     }
 
     private HttpListener listener;
@@ -14,6 +20,7 @@ class BankServer
     private string baseUrl = $"http://localhost:{port}/";
     private const string cabinetPage = "PageTemplates/personalCabinet.html";
     private string url = $"http://localhost:{port}/login/";
+    private Dictionary<string, string> user;
 
     public async Task HandleIncomingConnections()
     {
@@ -26,40 +33,37 @@ class BankServer
             HttpListenerRequest req = listenCont.Request;
             HttpListenerResponse res = listenCont.Response;
 
-            if ((req.HttpMethod == "POST") && (req.Url?.AbsolutePath == "/login/"))
+            if ((req.HttpMethod == "GET") && (req.Url?.PathAndQuery == "/login/"))
             {
-                byte[] data = File.ReadAllBytes(cabinetPage);
-                res.ContentType = "text/html";
-                res.ContentEncoding = Encoding.UTF8;
-                res.ContentLength64 = data.LongLength;
-
-                await res.OutputStream.WriteAsync(data, 0, data.Length);
-                res.Redirect(baseUrl + "cabinet/");
-
+                responseHandler(res, loginPage);
                 res.Close();
             }
-            else if ((req.HttpMethod == "GET") && (req.Url?.AbsolutePath == "/cabinet/"))
+            else if ((req.HttpMethod == "POST") && (req.Url?.PathAndQuery == "/login/"))
             {
-                byte[] data = File.ReadAllBytes(cabinetPage);
-                res.ContentType = "text/html";
-                res.ContentEncoding = Encoding.UTF8;
-                res.ContentLength64 = data.LongLength;
-
-                await res.OutputStream.WriteAsync(data, 0, data.Length);
-
+                responseHandler(res, cabinetPage, "cabinet");
                 res.Close();
             }
-            else
+            else if ((req.HttpMethod == "GET") && (req.Url?.PathAndQuery == "/cabinet"))
             {
-                byte[] data = File.ReadAllBytes(loginPage);
-                res.ContentType = "text/html";
-                res.ContentEncoding = Encoding.UTF8;
-                res.ContentLength64 = data.LongLength;
-
-                await res.OutputStream.WriteAsync(data, 0, data.Length);
-
+                responseHandler(res, cabinetPage);
                 res.Close();
             }
+        }
+    }
+
+    private void responseHandler(HttpListenerResponse res, string page, string? redirectUri = null)
+    {
+        byte[] data = File.ReadAllBytes(page);
+        res.ContentType = "text/html";
+        res.ContentEncoding = Encoding.UTF8;
+        res.ContentLength64 = data.LongLength;
+
+        res.OutputStream.WriteAsync(data, 0, data.Length);
+
+        if (redirectUri is not null)
+        {
+            res.Redirect(baseUrl + redirectUri);
+            res.Close();
         }
     }
 
