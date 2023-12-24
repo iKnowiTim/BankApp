@@ -18,10 +18,8 @@ class BankServer
     private const int port = 3000;
     private const string loginPage = "PageTemplates/login.html";
     private const string cabinetPage = "PageTemplates/personalCabinet.html";
-    private string baseUrl = $"http://localhost:{port}/";
     private string url = $"http://localhost:{port}/login/";
     private Dictionary<string, string> user;
-
     public async Task HandleIncomingConnections()
     {
         bool isServer = true;
@@ -35,17 +33,17 @@ class BankServer
 
             if ((req.HttpMethod == "GET") && (req.Url?.PathAndQuery == "/login/"))
             {
-                responseHandler(res, loginPage);
+                responseHandler(res, req, loginPage);
                 res.Close();
             }
             else if ((req.HttpMethod == "POST") && (req.Url?.PathAndQuery == "/login/"))
             {
-                responseHandler(res, cabinetPage, "/cabinet");
+                res.Redirect("/cabinet/");
                 res.Close();
             }
-            else if ((req.HttpMethod == "GET") && (req.Url?.PathAndQuery == "/cabinet"))
+            else if ((req.HttpMethod == "GET") && (req.Url?.PathAndQuery == "/cabinet/"))
             {
-                responseHandler(res, cabinetPage);
+                responseHandler(res, req, cabinetPage);
                 res.Close();
             }
         }
@@ -60,17 +58,23 @@ class BankServer
         res.OutputStream.WriteAsync(data, 0, data.Length);
     }
 
-    private void responseHandler(HttpListenerResponse res, string page, string? redirectUri = null)
+    private void responseHandler(HttpListenerResponse res, HttpListenerRequest req, string page)
     {
-        if (redirectUri is not null)
-        {
-            res.Redirect(redirectUri);
-        }
-        else
-        {
-            WriteStream(res, page);
-        }
+        WriteStream(res, page);
+        log(req);
+    }
 
+    private void log(HttpListenerRequest request)
+    {
+        Console.WriteLine($"адрес приложения: {request.LocalEndPoint}");
+        Console.WriteLine($"адрес клиента: {request.RemoteEndPoint}");
+        Console.WriteLine(request.RawUrl);
+        Console.WriteLine($"Запрошен адрес: {request.Url}");
+        Console.WriteLine("Заголовки запроса:");
+        foreach (string item in request.Headers.Keys)
+        {
+            Console.WriteLine($"{item}:{request.Headers[item]}");
+        }
     }
 
     public void StartServer()
