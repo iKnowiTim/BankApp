@@ -51,6 +51,15 @@ class BankServer
         }
     }
 
+    private void WriteStream(HttpListenerResponse res, string page)
+    {
+        byte[] data = File.ReadAllBytes(page);
+        res.ContentType = "text/html";
+        res.ContentEncoding = Encoding.UTF8;
+        res.ContentLength64 = data.LongLength;
+        res.OutputStream.WriteAsync(data, 0, data.Length);
+    }
+
     private void responseHandler(HttpListenerResponse res, string page, string? redirectUri = null)
     {
         if (redirectUri is not null)
@@ -59,11 +68,7 @@ class BankServer
         }
         else
         {
-            byte[] data = File.ReadAllBytes(page);
-            res.ContentType = "text/html";
-            res.ContentEncoding = Encoding.UTF8;
-            res.ContentLength64 = data.LongLength;
-            res.OutputStream.WriteAsync(data, 0, data.Length);
+            WriteStream(res, page);
         }
 
     }
