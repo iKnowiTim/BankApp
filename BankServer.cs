@@ -1,16 +1,15 @@
+using System.Collections.Specialized;
 using System.Net;
 using System.Text;
+using System.Web;
 
 class BankServer
 {
     public BankServer()
     {
         listener = new HttpListener();
-        user = new Dictionary<string, string>()
-        {
-            {"user1", "password1"},
-            {"user2", "password2"},
-            {"tim", "tim"}
+        user = new Dictionary<string, string>() {
+            {"tim", "123"}
         };
     }
 
@@ -38,6 +37,26 @@ class BankServer
             }
             else if ((req.HttpMethod == "POST") && (req.Url?.PathAndQuery == "/login/"))
             {
+                var body = getBodyFromForm(req);
+                if (body["login"] == "" || body["password"] == "")
+                {
+                    responseHandler(res, req, loginPage);
+                    res.Close();
+                    continue;
+                }
+                try
+                {
+                    string userPassword = user[body["login"]];
+                    if (userPassword != body["password"])
+                        throw new Exception();
+                }
+                catch
+                {
+                    res.StatusCode = 400;
+                    responseHandler(res, req, loginPage);
+                    continue;
+                }
+
                 res.Redirect("/cabinet/");
                 res.Close();
             }
@@ -47,6 +66,14 @@ class BankServer
                 res.Close();
             }
         }
+    }
+
+    private NameValueCollection getBodyFromForm(HttpListenerRequest req)
+    {
+        Stream body = req.InputStream;
+        Encoding encoding = req.ContentEncoding;
+        StreamReader reader = new StreamReader(body, encoding);
+        return HttpUtility.ParseQueryString(reader.ReadToEnd());
     }
 
     private void WriteStream(HttpListenerResponse res, string page)
@@ -70,11 +97,6 @@ class BankServer
         Console.WriteLine($"адрес клиента: {request.RemoteEndPoint}");
         Console.WriteLine(request.RawUrl);
         Console.WriteLine($"Запрошен адрес: {request.Url}");
-        Console.WriteLine("Заголовки запроса:");
-        foreach (string item in request.Headers.Keys)
-        {
-            Console.WriteLine($"{item}:{request.Headers[item]}");
-        }
         Console.WriteLine("Выполнено");
     }
 
