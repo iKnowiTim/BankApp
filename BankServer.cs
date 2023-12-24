@@ -17,8 +17,8 @@ class BankServer
     private HttpListener listener;
     private const int port = 3000;
     private const string loginPage = "PageTemplates/login.html";
-    private string baseUrl = $"http://localhost:{port}/";
     private const string cabinetPage = "PageTemplates/personalCabinet.html";
+    private string baseUrl = $"http://localhost:{port}/";
     private string url = $"http://localhost:{port}/login/";
     private Dictionary<string, string> user;
 
@@ -40,7 +40,7 @@ class BankServer
             }
             else if ((req.HttpMethod == "POST") && (req.Url?.PathAndQuery == "/login/"))
             {
-                responseHandler(res, cabinetPage, "cabinet");
+                responseHandler(res, cabinetPage, "/cabinet");
                 res.Close();
             }
             else if ((req.HttpMethod == "GET") && (req.Url?.PathAndQuery == "/cabinet"))
@@ -53,18 +53,19 @@ class BankServer
 
     private void responseHandler(HttpListenerResponse res, string page, string? redirectUri = null)
     {
-        byte[] data = File.ReadAllBytes(page);
-        res.ContentType = "text/html";
-        res.ContentEncoding = Encoding.UTF8;
-        res.ContentLength64 = data.LongLength;
-
-        res.OutputStream.WriteAsync(data, 0, data.Length);
-
         if (redirectUri is not null)
         {
-            res.Redirect(baseUrl + redirectUri);
-            res.Close();
+            res.Redirect(redirectUri);
         }
+        else
+        {
+            byte[] data = File.ReadAllBytes(page);
+            res.ContentType = "text/html";
+            res.ContentEncoding = Encoding.UTF8;
+            res.ContentLength64 = data.LongLength;
+            res.OutputStream.WriteAsync(data, 0, data.Length);
+        }
+
     }
 
     public void StartServer()
