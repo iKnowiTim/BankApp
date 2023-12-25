@@ -1,27 +1,33 @@
+using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Net;
 using System.Text;
 using System.Web;
+using Microsoft.VisualBasic;
 
 class BankServer
 {
     public BankServer()
     {
         listener = new HttpListener();
-        user = new Dictionary<string, string>() {
-            {"tim", "123"}
+        users = new List<User>() {
+            new User(UserManager.SetSession(), "tim", "123", 2033),
+            new User(UserManager.SetSession(), "carl", "1234", 1),
+            new User(UserManager.SetSession(), "alex", "hoenn", 400),
+            new User(UserManager.SetSession(), "jesus", "god", 99999999),
         };
-
     }
     private HttpListener listener;
     private const int port = 3000;
     private const string loginPage = "PageTemplates/login.html";
     private const string cabinetPage = "PageTemplates/personalCabinet.html";
     private string baseUrl = $"http://localhost:{port}/";
-    private Dictionary<string, string> user;
+    private List<User> users;
+    private const string filePath = "./users.json";
     public async Task HandleIncomingConnections()
     {
         bool isServer = true;
+        UserManager.SaveUsers(users, filePath);
 
         while (isServer)
         {
@@ -37,35 +43,41 @@ class BankServer
             }
             else if ((req.HttpMethod == "POST") && (req.Url?.PathAndQuery == "/login/"))
             {
-                var body = getBodyFromForm(req);
-                if (body["login"] == "" || body["password"] == "")
+                var sessionUser = UserManager.GetUserBySession(getSession(req), users);
+
+                if (sessionUser is not null)
                 {
-                    responseHandler(res, req, loginPage);
+                    Console.WriteLine("Клиент зашел по сессии");
+                    res.Redirect("/cabinet/");
                     res.Close();
                     continue;
                 }
-                try
+                var body = getBodyFromForm(req);
+                if (body["login"] == "" && body["password"] == "")
                 {
-                    string userPassword = user[body["login"]];
-                    if (userPassword != body["password"])
-                        throw new Exception();
-                }
-                catch
-                {
-                    res.StatusCode = 400;
-                    responseHandler(res, req, loginPage);
+                    res.Redirect("/login/");
+                    res.Close();
                     continue;
                 }
 
-                res.Headers.Add("Set-Cookie", $"username={body["login"]}&password={body["password"]}; expires=Thu, 27-Jan-2024 00:45:41 GMT; path=/");
+                string login = body["login"];
+                string password = body["password"];
+                var user = users.Find(user => user.Login == login && user.Password == password);
+                if (user is null)
+                {
+                    res.Redirect("/login/");
+                    res.Close();
+                    continue;
+                }
 
+                var cookieDate = DateTime.UtcNow.AddMinutes(60d).ToString("dddd, dd-MM-yyyy hh:mm:ss GMT");
+                res.Headers.Add("Set-Cookie", $"sessionid={user.SessionId};Path=/;Expires=" + cookieDate + " GMT");
                 res.Redirect("/cabinet/");
                 res.Close();
             }
             else if ((req.HttpMethod == "GET") && (req.Url?.PathAndQuery == "/cabinet/"))
             {
                 responseHandler(res, req, cabinetPage);
-                Console.WriteLine(req.Cookies);
                 res.Close();
             }
             else
@@ -75,6 +87,8 @@ class BankServer
             }
         }
     }
+
+    private string? getSession(HttpListenerRequest req) => req.Cookies.ToList()?.FirstOrDefault()?.ToString();
 
     private NameValueCollection getBodyFromForm(HttpListenerRequest req)
     {
@@ -101,11 +115,13 @@ class BankServer
 
     private void log(HttpListenerRequest request)
     {
+        Console.WriteLine("############### Логи ##################");
         Console.WriteLine($"адрес приложения: {request.LocalEndPoint}");
         Console.WriteLine($"адрес клиента: {request.RemoteEndPoint}");
         Console.WriteLine(request.RawUrl);
         Console.WriteLine($"Запрошен адрес: {request.Url}");
         Console.WriteLine("Выполнено");
+        Console.WriteLine("#######################################");
     }
 
     public void StartServer()
