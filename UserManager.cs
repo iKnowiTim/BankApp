@@ -34,7 +34,6 @@ public static class UserManager
     public static User? GetUserBySession(string sessionId, List<User> users)
     {
         string parseSession = sessionId.Replace("sessionid=", "");
-        Console.WriteLine(parseSession);
         return users.FirstOrDefault(user => user.SessionId == parseSession);
     }
 

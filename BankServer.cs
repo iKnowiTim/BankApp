@@ -38,15 +38,19 @@ class BankServer
 
             if ((req.HttpMethod == "GET") && (req.Url?.PathAndQuery == "/login/"))
             {
-                var sessionUser = UserManager.GetUserBySession(getSession(req), users);
-
-                if (sessionUser is not null)
+                if (req.Cookies.Count > 0)
                 {
-                    Console.WriteLine("Клиент зашел по сессии");
-                    res.Redirect("/cabinet/");
-                    res.Close();
-                    continue;
+                    var sessionUser = UserManager.GetUserBySession(getSession(req), users);
+                    if (sessionUser is not null)
+                    {
+                        Console.WriteLine("Клиент зашел по сессии");
+                        res.Redirect("/cabinet/");
+                        res.Close();
+                        continue;
+                    }
                 }
+
+
                 responseHandler(res, req, loginPage);
                 res.Close();
             }
