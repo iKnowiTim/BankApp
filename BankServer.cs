@@ -11,8 +11,8 @@ class BankServer
         user = new Dictionary<string, string>() {
             {"tim", "123"}
         };
-    }
 
+    }
     private HttpListener listener;
     private const int port = 3000;
     private const string loginPage = "PageTemplates/login.html";
@@ -57,12 +57,20 @@ class BankServer
                     continue;
                 }
 
+                res.Headers.Add("Set-Cookie", $"username={body["login"]}&password={body["password"]}; expires=Thu, 27-Jan-2024 00:45:41 GMT; path=/");
+
                 res.Redirect("/cabinet/");
                 res.Close();
             }
             else if ((req.HttpMethod == "GET") && (req.Url?.PathAndQuery == "/cabinet/"))
             {
                 responseHandler(res, req, cabinetPage);
+                Console.WriteLine(req.Cookies);
+                res.Close();
+            }
+            else
+            {
+                res.Redirect("/login/");
                 res.Close();
             }
         }
