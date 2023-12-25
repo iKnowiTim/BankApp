@@ -38,11 +38,6 @@ class BankServer
 
             if ((req.HttpMethod == "GET") && (req.Url?.PathAndQuery == "/login/"))
             {
-                responseHandler(res, req, loginPage);
-                res.Close();
-            }
-            else if ((req.HttpMethod == "POST") && (req.Url?.PathAndQuery == "/login/"))
-            {
                 var sessionUser = UserManager.GetUserBySession(getSession(req), users);
 
                 if (sessionUser is not null)
@@ -52,6 +47,11 @@ class BankServer
                     res.Close();
                     continue;
                 }
+                responseHandler(res, req, loginPage);
+                res.Close();
+            }
+            else if ((req.HttpMethod == "POST") && (req.Url?.PathAndQuery == "/login/"))
+            {
                 var body = getBodyFromForm(req);
                 if (body["login"] == "" && body["password"] == "")
                 {
@@ -77,7 +77,19 @@ class BankServer
             }
             else if ((req.HttpMethod == "GET") && (req.Url?.PathAndQuery == "/cabinet/"))
             {
-                responseHandler(res, req, cabinetPage);
+                var page = File.ReadAllText(cabinetPage).ToString();
+                var sessionUser = UserManager.GetUserBySession(getSession(req), users);
+                if (sessionUser is null)
+                {
+                    res.Redirect("/login/");
+                    res.Close();
+                    continue;
+                }
+                byte[] data = Encoding.UTF8.GetBytes(String.Format(page, sessionUser.Balance));
+                res.ContentType = "text/html";
+                res.ContentEncoding = Encoding.UTF8;
+                res.ContentLength64 = data.LongLength;
+                res.OutputStream.WriteAsync(data, 0, data.Length);
                 res.Close();
             }
             else
