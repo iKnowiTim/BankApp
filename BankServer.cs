@@ -20,6 +20,7 @@ class BankServer
     private HttpListener listener;
     private const int port = 3000;
     private const string loginPage = "PageTemplates/login.html";
+    private const string errorLogin = "PageTemplates/errorLogin.html";
     private const string cabinetPage = "PageTemplates/personalCabinet.html";
     private string baseUrl = $"http://localhost:{port}/";
     private List<User> users;
@@ -59,7 +60,8 @@ class BankServer
                 var body = getBodyFromForm(req);
                 if (body["login"] == "" && body["password"] == "")
                 {
-                    res.Redirect("/login/");
+                    var page = File.ReadAllText(errorLogin).ToString();
+                    WriteStream(res, errorLogin);
                     res.Close();
                     continue;
                 }
@@ -69,7 +71,8 @@ class BankServer
                 var user = users.Find(user => user.Login == login && user.Password == password);
                 if (user is null)
                 {
-                    res.Redirect("/login/");
+                    var page = File.ReadAllText(errorLogin).ToString();
+                    WriteStream(res, errorLogin);;
                     res.Close();
                     continue;
                 }
@@ -85,7 +88,8 @@ class BankServer
                 var sessionUser = UserManager.GetUserBySession(getSession(req), users);
                 if (sessionUser is null)
                 {
-                    res.Redirect("/login/");
+                    var errorpage = File.ReadAllText(errorLogin).ToString();
+                    WriteStream(res, File.ReadAllText(errorpage).ToString());
                     res.Close();
                     continue;
                 }
